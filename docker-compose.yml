@@ -25,6 +25,7 @@ services:
       /bin/sh -c "
       until (/usr/bin/mc config host add myminio http://myminio:9000 AKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY) do echo '....wait...' && sleep 1; done;
       /usr/bin/mc rm -r --force myminio/somebucketname;
+      /usr/bin/mc mb myminio/somebucketname;
       /usr/bin/mc policy set public myminio/somebucketname;
       /usr/bin/mc cp --recursive /tmp/model myminio/somebucketname;
       "
@@ -42,7 +43,7 @@ services:
      - "S3_ENDPOINT=http://myminio:9000"
    
   tf-client:
-    image: python:3.8-bullseye
+    image: nyurik/alpine-python3-requests
     depends_on: 
      - tf-serving
     environment:
@@ -51,8 +52,7 @@ services:
      - "TF_MODEL=saved_model_half_plus_two_cpu"
     volumes:
      - "./scripts:/scripts"
-    entrypoint: >
-     /bin/sh -c "python /scripts/request_prediction.py"
+    
       
      
      
