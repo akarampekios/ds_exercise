@@ -11,9 +11,9 @@ def isfloat(value):
 
 
 def main():
-    
-    while (text:=input("Enter comma seperated values:").lower()) != "exit":
-        print(text)
+    text=""
+    while text != "exit":
+        text=input("Enter comma seperated values:").lower()
         values = text.split(",")
         if not all((isfloat(v) for v in values)):
             print("invalid input")
@@ -30,9 +30,7 @@ def main():
                 print("fail to predict , error code:",r.status_code)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             print("fail to reach service due to ",e)
-        
 
 if __name__=="__main__":
     main()
     
-
