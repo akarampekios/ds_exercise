@@ -1,33 +1,31 @@
-version: "2"
+version: "3"
 services:
-  myminio:
+  minio_storage:
     image: minio/minio
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - ./test/.minio/data:/export
-      - ./test/.minio/config:/root/.minio
+      - ./minio_data/.minio/data:/export
+      - ./minio_config/.minio/config:/root/.minio
     environment:
       - "MINIO_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE"
       - "MINIO_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-      #- "MINIO_ROOT_USER=AKIAIOSFODNN7EXAMPLE"
-      #- "MINIO_ROOT_PASSWORD=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     command: server /export --console-address ":9001"
 
   createbuckets:
     image: minio/mc
     depends_on:
-      - myminio
+      - minio_storage
     volumes:
       - "./model:/tmp/model"
     entrypoint: >
       /bin/sh -c "
-      until (/usr/bin/mc config host add myminio http://myminio:9000 AKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY) do echo '....wait...' && sleep 1; done;
-      /usr/bin/mc rm -r --force myminio/somebucketname;
-      /usr/bin/mc mb myminio/somebucketname;
-      /usr/bin/mc policy set public myminio/somebucketname;
-      /usr/bin/mc cp --recursive /tmp/model myminio/somebucketname;
+      until (/usr/bin/mc config host add minio_storage http://minio_storage:9000 AKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY) do echo '....wait...' && sleep 1; done;
+      /usr/bin/mc rm -r --force minio_storage/tfmodels;
+      /usr/bin/mc mb minio_storage/tfmodels;
+      /usr/bin/mc policy set public minio_storage/tfmodels;
+      /usr/bin/mc cp --recursive /tmp/model minio_storage/tfmodels;
       "
   tf-serving:
     image: tensorflow/serving
@@ -38,12 +36,14 @@ services:
     environment:
      - "AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE"
      - "AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-     - "MODEL_BASE_PATH=s3://somebucketname/model"
+     - "MODEL_BASE_PATH=s3://tfmodels/model"
      - "MODEL_NAME=saved_model_half_plus_two_cpu"
-     - "S3_ENDPOINT=http://myminio:9000"
+     - "S3_ENDPOINT=http://minio_storage:9000"
    
   tf-client:
     image: nyurik/alpine-python3-requests
+    stdin_open: true
+    tty: true
     depends_on: 
      - tf-serving
     environment:
