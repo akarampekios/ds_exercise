@@ -1,9 +1,8 @@
 # ds_exercise
-# The repo contains, apart from the current README file, a docker composer
-# file and two folders. Model folder contains the HALF_PLUS_TWO toy model
-# and the scripts folder contains a python file for calling the tf-serving.
+# The repo contains, apart from the current README file, a docker composer file and two folders. Model folder contains the HALF_PLUS_TWO toy model and the scripts folder contains a python file for calling the tf-serving.
 
 # Instructions for the execution of the exercise:
+
 # Clone the repo using git command: git clone <git_url>
 git clone https://github.com/akarampekios/ds_exercise.git
 
